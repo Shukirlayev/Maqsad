@@ -1,0 +1,6 @@
+{
+  "name": "Maqsadli Jamg'arma",
+  "description": "Shaxsiy maqsadlar uchun pul jamg'arish va kuzatish ilovasi",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

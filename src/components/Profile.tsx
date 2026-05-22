@@ -9,17 +9,7 @@ type Props = {
 };
 
 export default function Profile({ theme, toggleTheme }: Props) {
-  const [loading, setLoading] = useState(false);
   const user = auth.currentUser;
-
-  const handleLogout = async () => {
-    try {
-      setLoading(true);
-      await signOut(auth);
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in pb-24 min-h-full">
@@ -93,15 +83,6 @@ export default function Profile({ theme, toggleTheme }: Props) {
               <span className="font-bold text-[15px] text-slate-800 dark:text-slate-200">Yordam so'rash</span>
             </div>
             <ChevronRight size={20} className="text-slate-300 dark:text-slate-600" />
-          </div>
-
-          <div onClick={handleLogout} className="flex items-center justify-between p-4 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-500/10 cursor-pointer transition-colors mt-2">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-500 flex items-center justify-center shadow-inner dark:shadow-none">
-                <LogOut size={20} />
-              </div>
-              <span className="font-bold text-[15px] text-rose-600 dark:text-rose-500">Tizimdan chiqish</span>
-            </div>
           </div>
         </div>
       </div>

@@ -7,6 +7,7 @@ export type Transaction = {
 
 export type Goal = {
   id: string;
+  userId?: string;
   title: string;
   targetAmount: number;
   currentAmount: number;
@@ -14,4 +15,5 @@ export type Goal = {
   createdAt: string;
   history: Transaction[];
   color: string;
+  category?: string;
 };

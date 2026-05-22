@@ -2,13 +2,17 @@ import React from 'react';
 import { Goal } from '../types';
 import { formatCurrency } from '../lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, Tooltip } from 'recharts';
-import { Target, TrendingUp, Award } from 'lucide-react';
+import { Target, TrendingUp, Award, Flame } from 'lucide-react';
+import SmartAssistant from './SmartAssistant';
+import PredictionGraph from './PredictionGraph';
+import { calculateStreak } from '../lib/streak';
 
 export default function Stats({ goals }: { goals: Goal[] }) {
   const totalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
   const totalSaved = goals.reduce((sum, g) => sum + g.currentAmount, 0);
   const totalGoals = goals.length;
   const completedGoals = goals.filter(g => g.currentAmount >= g.targetAmount).length;
+  const { currentStreak, maxStreak } = calculateStreak(goals);
 
   const pieData = [
     { name: "Yig'ilgan", value: totalSaved },
@@ -18,9 +22,27 @@ export default function Stats({ goals }: { goals: Goal[] }) {
 
   return (
     <div className="p-6 space-y-6 animate-in fade-in pb-24">
-       <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Statistika</h2>
+       <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Statistika</h2>
        
-       <div className="grid grid-cols-2 gap-4">
+       <SmartAssistant goals={goals} />
+
+       {/* Streak Badge */}
+       <div className="bg-gradient-to-r from-orange-500 to-rose-500 rounded-3xl p-6 shadow-sm flex items-center justify-between text-white my-4 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16 group-hover:bg-white/20 transition-all duration-500"></div>
+          <div>
+             <h3 className="text-sm font-semibold opacity-90 uppercase tracking-widest mb-1">Jamg'arma seriyasi</h3>
+             <div className="flex items-end gap-2">
+                <span className="text-4xl font-bold tracking-tight">{currentStreak}</span>
+                <span className="text-lg opacity-80 mb-1">kun</span>
+             </div>
+             <p className="text-xs opacity-80 mt-1">Eng yaxshi natija: {maxStreak} kun</p>
+          </div>
+          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+             <Flame size={32} className="text-white" />
+          </div>
+       </div>
+
+       <div className="grid grid-cols-2 gap-4 mt-6">
          <div className="bg-white dark:bg-[#1C1C1F] p-4 rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm">
            <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-2">
              <Target size={16} />
@@ -37,7 +59,9 @@ export default function Stats({ goals }: { goals: Goal[] }) {
          </div>
        </div>
 
-       <div className="bg-white dark:bg-[#1C1C1F] rounded-3xl p-6 border border-slate-200 dark:border-white/5 shadow-sm">
+       <PredictionGraph goals={goals} />
+
+       <div className="bg-white dark:bg-[#1C1C1F] rounded-3xl p-6 border border-slate-200 dark:border-white/5 shadow-sm mt-4">
          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-200 mb-6 flex items-center gap-2">
            <TrendingUp size={16} className="text-indigo-500" />
            Umumiy taraqqiyot

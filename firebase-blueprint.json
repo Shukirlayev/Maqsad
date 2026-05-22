@@ -1,0 +1,47 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and settings",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "currency": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "Goal": {
+      "title": "Goal",
+      "description": "A saving goal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "targetAmount": { "type": "number" },
+        "currentAmount": { "type": "number" },
+        "category": { "type": "string" },
+        "deadline": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "color": { "type": "string" },
+        "history": {
+          "type": "array"
+        }
+      },
+      "required": ["id", "userId", "title", "targetAmount", "currentAmount", "createdAt", "history"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/goals/{goalId}": {
+      "schema": "Goal",
+      "description": "Goals of the user"
+    }
+  }
+}

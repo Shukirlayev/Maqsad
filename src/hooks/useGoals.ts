@@ -1,90 +1,121 @@
 import { useState, useEffect } from 'react';
 import { Goal, Transaction } from '../types';
+import { db, auth } from '../lib/firebase';
+import { collection, doc, setDoc, onSnapshot, deleteDoc, query, where } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 
-const STORAGE_KEY = 'maqsadli-jamgarma-goals';
-
 export function useGoals() {
-  const [goals, setGoals] = useState<Goal[]>(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch (e) {
-        console.error("Local storage parselashda xatolik", e);
-      }
-    }
-    return [];
-  });
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
-  }, [goals]);
+    if (!auth.currentUser) {
+      setGoals([]);
+      setLoading(false);
+      return;
+    }
 
-  const addGoal = (goalData: Omit<Goal, 'id' | 'createdAt' | 'currentAmount' | 'history'>) => {
+    const q = query(
+      collection(db, 'goals'), 
+      where('userId', '==', auth.currentUser.uid)
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const dbGoals = snapshot.docs.map(doc => doc.data() as Goal);
+      setGoals(dbGoals);
+      setLoading(false);
+    }, (err) => {
+      console.error(err);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [auth.currentUser]);
+
+  const addGoal = async (goalData: Omit<Goal, 'id' | 'createdAt' | 'currentAmount' | 'history'>) => {
+    if (!auth.currentUser) return;
     const newGoal: Goal = {
       ...goalData,
       id: uuidv4(),
+      userId: auth.currentUser.uid,
       currentAmount: 0,
       createdAt: new Date().toISOString(),
       history: [],
     };
-    setGoals((prev) => [...prev, newGoal]);
+    try {
+      await setDoc(doc(db, 'goals', newGoal.id), newGoal);
+    } catch (error) {
+      console.error("Xatolik: ", error);
+    }
   };
 
-  const updateGoal = (id: string, updates: Partial<Omit<Goal, 'id' | 'createdAt' | 'history'>>) => {
-    setGoals((prev) =>
-      prev.map((g) => (g.id === id ? { ...g, ...updates } : g))
-    );
+  const updateGoal = async (id: string, updates: Partial<Omit<Goal, 'id' | 'createdAt' | 'history'>>) => {
+    const goal = goals.find(g => g.id === id);
+    if (!goal || !auth.currentUser) return;
+    
+    const updatedGoal = { ...goal, ...updates };
+    try {
+      await setDoc(doc(db, 'goals', id), updatedGoal);
+    } catch (error) {
+       console.error("Xatolik: ", error);
+    }
   };
 
-  const deleteGoal = (id: string) => {
-    setGoals((prev) => prev.filter((g) => g.id !== id));
+  const deleteGoal = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'goals', id));
+    } catch (error) {
+       console.error("Xatolik: ", error);
+    }
   };
 
-  const addTransaction = (goalId: string, amount: number, note?: string) => {
+  const addTransaction = async (goalId: string, amount: number, note?: string) => {
+    const goal = goals.find(g => g.id === goalId);
+    if (!goal || !auth.currentUser) return;
+
     const transaction: Transaction = {
       id: uuidv4(),
       amount,
       date: new Date().toISOString(),
       note,
     };
-    setGoals((prev) =>
-      prev.map((g) => {
-        if (g.id === goalId) {
-          const newCurrentAmout = Math.max(0, g.currentAmount + amount);
-          return {
-            ...g,
-            currentAmount: newCurrentAmout,
-            history: [transaction, ...g.history],
-          };
-        }
-        return g;
-      })
-    );
+    
+    const newCurrentAmount = Math.max(0, goal.currentAmount + amount);
+    const updatedGoal = {
+      ...goal,
+      currentAmount: newCurrentAmount,
+      history: [transaction, ...goal.history],
+    };
+    try {
+      await setDoc(doc(db, 'goals', goalId), updatedGoal);
+    } catch (error) {
+       console.error("Xatolik:", error);
+    }
   };
 
-  const deleteTransaction = (goalId: string, transactionId: string) => {
-    setGoals((prev) =>
-      prev.map((g) => {
-        if (g.id === goalId) {
-          const trans = g.history.find((t) => t.id === transactionId);
-          if (!trans) return g;
-          
-          const newCurrent = Math.max(0, g.currentAmount - trans.amount);
-          return {
-            ...g,
-            currentAmount: newCurrent,
-            history: g.history.filter((t) => t.id !== transactionId),
-          };
-        }
-        return g;
-      })
-    );
+  const deleteTransaction = async (goalId: string, transactionId: string) => {
+    const goal = goals.find(g => g.id === goalId);
+    if (!goal || !auth.currentUser) return;
+
+    const trans = goal.history.find(t => t.id === transactionId);
+    if (!trans) return;
+
+    const newCurrent = Math.max(0, goal.currentAmount - trans.amount);
+    const updatedGoal = {
+      ...goal,
+      currentAmount: newCurrent,
+      history: goal.history.filter(t => t.id !== transactionId),
+    };
+    try {
+      await setDoc(doc(db, 'goals', goalId), updatedGoal);
+    } catch (error) {
+       console.error("Xatolik:", error);
+    }
   };
 
   return {
     goals,
+    loading,
     addGoal,
     updateGoal,
     deleteGoal,

@@ -1,7 +1,18 @@
 import React from 'react';
 import { Goal } from '../types';
 import { formatCurrency } from '../lib/utils';
-import { Target, Calendar, ChevronRight } from 'lucide-react';
+import { Target, Calendar, ChevronRight, Car, Home, Smartphone, Plane, GraduationCap, Heart, Gift, Wallet } from 'lucide-react';
+
+const CATEGORY_ICONS: Record<string, any> = {
+  auto: Car,
+  home: Home,
+  tech: Smartphone,
+  travel: Plane,
+  education: GraduationCap,
+  health: Heart,
+  gifts: Gift,
+  other: Wallet,
+};
 
 type Props = {
   goals: Goal[];
@@ -69,6 +80,8 @@ export default function Dashboard({ goals, onSelectGoal, onAddGoal }: Props) {
                   reminderText = "Muddat o'tgan";
                 }
               }
+              
+              const CategoryIcon = goal.category ? CATEGORY_ICONS[goal.category] : Target;
 
               return (
                 <div 
@@ -79,7 +92,7 @@ export default function Dashboard({ goals, onSelectGoal, onAddGoal }: Props) {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-4">
                        <div className="w-12 h-12 rounded-[18px] flex items-center justify-center text-white shadow-md shadow-slate-200/50 dark:shadow-none transition-transform group-hover:scale-105" style={{ backgroundColor: goal.color || '#4f46e5' }}>
-                         <Target size={20} strokeWidth={2.5} />
+                         <CategoryIcon size={20} strokeWidth={2.5} />
                        </div>
                        <div>
                          <h3 className="font-bold text-[17px] text-slate-900 dark:text-slate-100 leading-tight mb-1">{goal.title}</h3>

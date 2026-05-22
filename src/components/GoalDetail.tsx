@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
 import { Goal } from '../types';
 import { formatCurrency, formatDate } from '../lib/utils';
-import { ArrowLeft, Trash2, PlusCircle, MinusCircle, History } from 'lucide-react';
+import { ArrowLeft, Trash2, PlusCircle, MinusCircle, History, Target, Car, Home as HomeIcon, Smartphone, Plane, GraduationCap, Heart, Gift, Wallet } from 'lucide-react';
 import { BarChart, Bar, Tooltip, ResponsiveContainer } from 'recharts';
+
+const CATEGORY_ICONS: Record<string, any> = {
+  auto: Car,
+  home: HomeIcon,
+  tech: Smartphone,
+  travel: Plane,
+  education: GraduationCap,
+  health: Heart,
+  gifts: Gift,
+  other: Wallet,
+};
 
 type Props = {
   goal: Goal;
@@ -39,6 +50,8 @@ export default function GoalDetail({ goal, onBack, onAddTransaction, onDeleteTra
   };
 
   const showForm = isAddingFunds || isWithdrawingFunds;
+  
+  const CategoryIcon = goal.category ? CATEGORY_ICONS[goal.category] : Target;
 
   return (
     <div className="p-6 pb-32 space-y-6 animate-in slide-in-from-right-8 fade-in duration-300 min-h-[90vh]">
@@ -63,13 +76,17 @@ export default function GoalDetail({ goal, onBack, onAddTransaction, onDeleteTra
 
       {/* Header Info */}
       <div className="text-center space-y-4 mt-2">
-        <div 
-          className="w-24 h-24 rounded-[32px] mx-auto flex items-center justify-center text-white mb-6 shadow-2xl shadow-indigo-500/10 dark:shadow-none border-[4px] border-white dark:border-[#121214]"
-          style={{ backgroundColor: goal.color || '#4f46e5' }}
-        >
-           <span className="text-3xl font-black">{progress}%</span>
+        <div className="flex items-center justify-center gap-3">
+          <div 
+            className="w-20 h-20 rounded-[32px] mx-auto flex items-center justify-center text-white shadow-2xl shadow-indigo-500/10 dark:shadow-none border-[4px] border-white dark:border-[#121214]"
+            style={{ backgroundColor: goal.color || '#4f46e5' }}
+          >
+             <CategoryIcon size={36} strokeWidth={2.5} />
+          </div>
         </div>
         <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight capitalize">{goal.title}</h1>
+        <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Prognoz bo'yicha yig'ildi: <span className="text-indigo-600 dark:text-indigo-400">{progress}%</span></p>
+        
         {goal.deadline && (
           <div className="inline-flex">
             <span className="text-xs text-slate-600 dark:text-slate-300 font-bold bg-white dark:bg-[#1C1C1F] px-4 py-2 rounded-full shadow-sm border border-slate-200 dark:border-white/5 uppercase tracking-wide">
